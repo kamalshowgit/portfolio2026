@@ -1,0 +1,284 @@
+{% extends 'personal/base.html' %}
+{% block title %}{{ profile.name }} — {{ profile.title }}{% endblock %}
+{% block content %}
+  <style>
+    .hero { display: grid; grid-template-columns: 280px 1fr; gap: 40px; margin-bottom: 40px; align-items: start; }
+    .hero-photo { width: 280px; height: 350px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; overflow: hidden; box-shadow: 0 12px 30px rgba(15,23,42,0.12); }
+    .hero-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-info h1 { font-size: 42px; font-weight: 800; margin: 0 0 8px 0; line-height: 1.2; }
+    .hero-info .title { font-size: 20px; color: var(--accent); font-weight: 600; margin-bottom: 16px; }
+    .hero-info .bio { font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 16px; max-width: 600px; }
+    .hero-info .contact { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px; }
+    .contact-item { font-size: 13px; display: flex; gap: 6px; }
+    .contact-item span { color: var(--muted); }
+    .contact-item a { text-decoration: none; font-weight: 500; }
+    .section { margin-bottom: 48px; }
+    .section h2 { font-size: 24px; font-weight: 700; margin: 0 0 20px 0; padding-bottom: 12px; border-bottom: 2px solid rgba(15,23,42,0.08); }
+    .entry { background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%); border: 1px solid rgba(15,23,42,0.06); border-radius: 10px; padding: 18px; margin-bottom: 14px; }
+    .entry-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .entry-title { font-weight: 700; font-size: 16px; color: #0f172a; }
+    .entry-meta { font-size: 13px; color: var(--accent); font-weight: 500; margin-top: 4px; }
+    .entry-desc { font-size: 14px; line-height: 1.5; color: #334155; margin-top: 10px; }
+    .sidebar-section { background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%); border: 1px solid rgba(15,23,42,0.06); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+    .sidebar-section h3 { font-size: 16px; font-weight: 700; margin: 0 0 14px 0; }
+    .link-item { padding: 8px 0; border-bottom: 1px solid rgba(15,23,42,0.04); }
+    .link-item:last-child { border-bottom: none; }
+    .link-item a { text-decoration: none; font-weight: 500; }
+    .note-item { padding: 10px 0; border-bottom: 1px dashed rgba(15,23,42,0.08); }
+    .note-item:last-child { border-bottom: none; }
+    .note-title { font-weight: 600; font-size: 14px; }
+    .note-content { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; gap: 28px; }
+      .hero-photo { width: 100%; height: 300px; }
+      .hero-info h1 { font-size: 32px; }
+    }
+  </style>
+
+  <!-- Hero section -->
+  <div class="hero">
+    <div class="hero-photo">
+      {% if profile.photo %}
+        <img src="{{ profile.photo.url }}" alt="profile photo" data-field="photo_preview">
+      {% else %}
+        <div style="width:100%;height:100%;background:linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);display:flex;align-items:center;justify-content:center;color:var(--muted)">Photo</div>
+      {% endif %}
+    </div>
+    <div class="hero-info">
+      <h1 data-editable data-field="name">{{ profile.name }}</h1>
+      <div class="title" data-editable data-field="title">{{ profile.title }}</div>
+      <div class="bio" data-editable data-field="bio">{{ profile.bio|linebreaksbr }}</div>
+      <div class="contact">
+        {% if profile.email %}
+          <div class="contact-item"><span>✉</span><a href="mailto:{{ profile.email }}">{{ profile.email }}</a></div>
+        {% endif %}
+        {% if profile.phone %}
+          <div class="contact-item"><span>📱</span><span>{{ profile.phone }}</span></div>
+        {% endif %}
+        {% if profile.location %}
+          <div class="contact-item"><span>📍</span><span>{{ profile.location }}</span></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content + sidebar -->
+  <div style="display: grid; grid-template-columns: 1fr 320px; gap: 40px;">
+    <div>
+      <!-- Experience section -->
+      {% if experiences %}
+        <div class="section">
+          <h2>Experience</h2>
+          {% for ex in experiences %}
+            <div class="entry">
+              <div class="entry-header">
+                <div>
+                  <div class="entry-title">{{ ex.employer }}</div>
+                  {% if ex.title %}<div class="entry-meta">{{ ex.title }}</div>{% endif %}
+                  <div class="entry-meta">{{ ex.start }}{% if ex.end %} – {{ ex.end }}{% endif %}{% if ex.location %} • {{ ex.location }}{% endif %}</div>
+                </div>
+              </div>
+              {% if ex.description %}<div class="entry-desc">{{ ex.description|linebreaksbr }}</div>{% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Education section -->
+      {% if educations %}
+        <div class="section">
+          <h2>Education</h2>
+          {% for ed in educations %}
+            <div class="entry">
+              <div class="entry-title">{{ ed.institution }}</div>
+              {% if ed.degree %}<div class="entry-meta">{{ ed.degree }}</div>{% endif %}
+              <div class="entry-meta">{{ ed.year }}</div>
+              {% if ed.details %}<div class="entry-desc">{{ ed.details|linebreaksbr }}</div>{% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Projects section -->
+      {% if projects %}
+        <div class="section">
+          <h2>Projects</h2>
+          {% for p in projects %}
+            <div class="entry">
+              <div class="entry-title">{{ p.title }}</div>
+              {% if p.description %}<div class="entry-desc">{{ p.description|linebreaksbr }}</div>{% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <aside>
+      <!-- Quick Links -->
+      {% if links %}
+        <div class="sidebar-section">
+          <h3 style="display:flex;justify-content:space-between">Quick Links{% if is_logged_in %}<span style="font-size:12px;cursor:pointer;color:var(--accent);font-weight:400">+ Add</span>{% endif %}</h3>
+          {% for link in links %}
+            <div class="link-item" style="display:flex;justify-content:space-between;align-items:center">
+              <a href="{{ link.url }}" target="_blank" style="flex:1">{{ link.title }} →</a>
+              {% if is_logged_in %}<a href="javascript:;" onclick="if(confirm('Delete link?')) window.location='{% url 'personal:delete_link' link.id %}'" style="font-size:12px;text-decoration:none;color:#dc2626">×</a>{% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Notes / Todo (Private) -->
+      {% if is_logged_in and notes %}
+        <div class="sidebar-section">
+          <h3>My Notes</h3>
+          {% regroup notes by folder as notes_by_folder %}
+          {% for folder_group in notes_by_folder %}
+            <div style="margin-bottom:12px">
+              <div style="font-weight:600;font-size:12px;color:var(--accent);text-transform:uppercase;margin-bottom:6px">{{ folder_group.grouper|title }}</div>
+              {% for n in folder_group.list %}
+                <div class="note-item">
+                  <div style="display:flex;justify-content:space-between;gap:8px">
+                    <div style="flex:1">
+                      <div class="note-title">{{ n.title }}</div>
+                      <div class="note-content">{{ n.content|truncatechars:60 }}</div>
+                    </div>
+                    <a href="{% url 'personal:toggle_note' n.pk %}" style="text-decoration:none;font-size:14px">{% if n.completed %}✓{% else %}○{% endif %}</a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+      {% elif is_logged_in %}
+        <div class="sidebar-section">
+          <h3>My Notes</h3>
+          <div class="small">No notes yet. <a href="javascript:;" id="editOpen" style="text-decoration:none">Add one</a></div>
+        </div>
+      {% endif %}
+
+      <!-- Contact Form -->
+      <div class="sidebar-section">
+        <h3>Get in Touch</h3>
+        <form id="contactForm" style="display:flex;flex-direction:column;gap:8px">
+          {% csrf_token %}
+          <input type="text" name="name" placeholder="Your name" required style="padding:8px;border:1px solid #ccc;border-radius:6px;font-size:13px" />
+          <input type="email" name="email" placeholder="your@email.com" required style="padding:8px;border:1px solid #ccc;border-radius:6px;font-size:13px" />
+          <input type="text" name="subject" placeholder="Subject" required style="padding:8px;border:1px solid #ccc;border-radius:6px;font-size:13px" />
+          <textarea name="message" placeholder="Your message..." rows="3" required style="padding:8px;border:1px solid #ccc;border-radius:6px;font-size:13px;resize:none"></textarea>
+          <button type="submit" class="edit-btn" style="width:100%;border:none;cursor:pointer;padding:10px;font-weight:600">Send Message</button>
+        </form>
+        <div id="contactMessage" style="margin-top:8px;font-size:12px;display:none"></div>
+      </div>
+
+      <!-- Calendar -->
+      <div class="sidebar-section">
+        <h3>Calendar <a href="javascript:;" id="calendarHelpBtn" style="font-size:12px;color:var(--muted);text-decoration:none;float:right">?</a></h3>
+        <div id="miniCal"></div>
+        <div class="small" style="margin-top:8px">Click any date to add a note</div>
+        <div id="calendarHelp" style="display:none;margin-top:8px;padding:8px;background:rgba(37,99,235,0.1);border-radius:6px;font-size:11px">
+          <strong>Color codes:</strong><br/>
+          <span style="display:inline-block;width:8px;height:8px;background:#3b82f6;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Blue = Today<br/>
+          <span style="display:inline-block;width:8px;height:8px;background:#8b5cf6;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Purple = Has note
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    // Calendar help toggle
+    document.getElementById('calendarHelpBtn')?.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const help = document.getElementById('calendarHelp');
+      help.style.display = help.style.display === 'none' ? 'block' : 'none';
+    });
+
+    (function(){
+      const noteColors = {
+        todo: '#3b82f6',      // blue
+        ideas: '#8b5cf6',     // purple
+        reminders: '#ef4444', // red
+        other: '#6b7280'      // gray
+      };
+      
+      function buildCal(el){
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const today = now.getDate();
+        const first = new Date(year, month, 1);
+        const last = new Date(year, month+1, 0);
+        let html = '<div style="font-weight:600;margin-bottom:10px;color:#0f172a">'+first.toLocaleString(undefined,{month:'long'})+' '+year+'</div>';
+        html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-size:11px">';
+        for(let i=0;i<first.getDay();i++){ html += '<div></div>' }
+        for(let d=1; d<=last.getDate(); d++){
+          const key = year+'-'+(month+1)+'-'+d;
+          const noteData = localStorage.getItem('cal-'+key) || '';
+          const noteColor = localStorage.getItem('cal-'+key+'-color') || '';
+          const isToday = d === today;
+          const hasNote = noteData !== '';
+          let bgStyle = 'background:rgba(15,23,42,0.06)';
+          if(isToday) bgStyle = 'background:#2563eb;color:white;font-weight:700';
+          else if(hasNote && noteColor) bgStyle = 'background:'+noteColor+';color:white;font-weight:600';
+          else if(hasNote) bgStyle = 'background:#8b5cf6;color:white;font-weight:600';
+          html += '<div style="padding:6px;border-radius:6px;'+bgStyle+';cursor:pointer;text-align:center;border:1px solid rgba(15,23,42,0.08);position:relative" data-day="'+d+'" title="'+(hasNote?noteData:'')+'" '+
+            'onmouseover="this.style.opacity=\'0.8\';this.style.transform=\'scale(1.05)\'" onmouseout="this.style.opacity=\'1\';this.style.transform=\'scale(1)\'">'+d+'</div>'
+        }
+        html += '</div>';
+        el.innerHTML = html;
+        el.querySelectorAll('[data-day]').forEach(node=>{
+          node.addEventListener('click', ()=>{
+            const d = node.getAttribute('data-day');
+            const key = year+'-'+(month+1)+'-'+d;
+            const cur = localStorage.getItem('cal-'+key) || '';
+            const color = localStorage.getItem('cal-'+key+'-color') || '';
+            const v = prompt('Note for '+key+' (current: "'+cur+'")', cur);
+            if(v===null) return;
+            if(v==='') {
+              localStorage.removeItem('cal-'+key); 
+              localStorage.removeItem('cal-'+key+'-color');
+            } else {
+              localStorage.setItem('cal-'+key, v);
+              // Auto-assign color based on keywords
+              let autoColor = '#6b7280'; // default gray
+              if(v.toLowerCase().includes('todo') || v.toLowerCase().includes('task')) autoColor = '#3b82f6';
+              else if(v.toLowerCase().includes('idea') || v.toLowerCase().includes('think')) autoColor = '#8b5cf6';
+              else if(v.toLowerCase().includes('remind') || v.toLowerCase().includes('important')) autoColor = '#ef4444';
+              localStorage.setItem('cal-'+key+'-color', autoColor);
+            }
+            buildCal(el);
+          })
+        })
+      }
+      const el = document.getElementById('miniCal'); if(el) buildCal(el);
+    })();
+    
+    // Contact form submission
+    const contactForm = document.getElementById('contactForm');
+    if(contactForm){
+      contactForm.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const formData = new FormData(contactForm);
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const resp = await fetch('{% url "personal:contact" %}', {
+          method: 'POST',
+          headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrftoken},
+          body: formData
+        });
+        const msgEl = document.getElementById('contactMessage');
+        if(resp.ok){
+          const js = await resp.json();
+          msgEl.style.color='#059669';
+          msgEl.textContent = js.message;
+          contactForm.reset();
+          setTimeout(()=>{ msgEl.style.display='none'; }, 5000);
+        } else {
+          const e = await resp.json();
+          msgEl.style.color='#dc2626';
+          msgEl.textContent = e.error || 'Error sending message';
+        }
+        msgEl.style.display='block';
+      });
+    }
+  </script>
+{% endblock %}

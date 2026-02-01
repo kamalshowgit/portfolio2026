@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+  <body style="font-family:system-ui;padding:24px;max-width:900px;margin:24px auto;color:#111">
+    <h1>Edit Page</h1>
+    <p><a href="/">View site</a> | <a href="{% url 'personal:logout' %}">Logout</a></p>
+
+    <h2>Profile</h2>
+    <form method="post" enctype="multipart/form-data">{% csrf_token %}
+      {{ pform.as_p }}
+      <button type="submit">Save profile</button>
+    </form>
+
+    <hr>
+    <h2>Quick links</h2>
+    <form method="post" action="{% url 'personal:add_link' %}">{% csrf_token %}
+      {{ qform.as_p }}
+      <button>Add link</button>
+    </form>
+    <ul>
+      {% for l in links %}
+        <li>{{ l.title }} — <a href="{% url 'personal:delete_link' l.pk %}">delete</a></li>
+      {% empty %}<li>No links</li>{% endfor %}
+    </ul>
+
+    <hr>
+    <h2>Projects</h2>
+    <form method="post" enctype="multipart/form-data" action="{% url 'personal:add_project' %}">{% csrf_token %}
+      {{ prform.as_p }}
+      <button>Add project</button>
+    </form>
+    <ul>
+      {% for p in projects %}
+        <li>{{ p.title }} — <a href="{% url 'personal:delete_project' p.pk %}">delete</a></li>
+      {% empty %}<li>No projects</li>{% endfor %}
+    </ul>
+
+    <hr>
+    <h2>Experience</h2>
+    <form method="post" action="{% url 'personal:add_experience' %}">{% csrf_token %}
+      {{ exform.as_p }}
+      <button>Add experience</button>
+    </form>
+    <ul>
+      {% for ex in experiences %}
+        <li><strong>{{ ex.title }}</strong> @ {{ ex.employer }} ({{ ex.start }}{% if ex.end %} – {{ ex.end }}{% endif %}) — <a href="{% url 'personal:delete_experience' ex.pk %}">delete</a></li>
+      {% empty %}<li>No experiences</li>{% endfor %}
+    </ul>
+
+    <hr>
+    <h2>Education</h2>
+    <form method="post" action="{% url 'personal:add_education' %}">{% csrf_token %}
+      {{ edform.as_p }}
+      <button>Add education</button>
+    </form>
+    <ul>
+      {% for ed in educations %}
+        <li><strong>{{ ed.degree }}</strong> from {{ ed.institution }} ({{ ed.year }}) — <a href="{% url 'personal:delete_education' ed.pk %}">delete</a></li>
+      {% empty %}<li>No education entries</li>{% endfor %}
+    </ul>
+
+    <hr>
+    <h2>Notes / Todo (Private - Only You Can See)</h2>
+    <form method="post" action="{% url 'personal:add_note' %}">{% csrf_token %}
+      {{ nform.as_p }}
+      <button>Add note</button>
+    </form>
+    
+    {% regroup notes by folder as notes_by_folder %}
+    {% for folder_group in notes_by_folder %}
+      <h3>{{ folder_group.grouper|title }}</h3>
+      <ul>
+        {% for n in folder_group.list %}
+          <li>{% if n.completed %}✅{% endif %} <strong>{{ n.title }}</strong> <br><small>{{ n.content|truncatechars:100 }}</small> — <a href="{% url 'personal:toggle_note' n.pk %}">toggle</a> <a href="{% url 'personal:delete_note' n.pk %}">delete</a></li>
+        {% endfor %}
+      </ul>
+    {% empty %}
+      <p>No notes yet.</p>
+    {% endfor %}
+  </body>
+</html>

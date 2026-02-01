@@ -1,0 +1,160 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{% block title %}{{ profile.name }}{% endblock %}</title>
+    <style>
+      :root{
+        --bg:#f6f8fb; /* page background */
+        --card:#ffffff; /* card background */
+        --muted:#64748b; /* muted text */
+        --accent:#2563eb; /* accent */
+        --glass:rgba(255,255,255,0.7);
+      }
+      html,body{height:100%}
+      body{font-family:system-ui, -apple-system, Roboto, Arial, sans-serif;background:var(--bg);color:#0f172a;margin:0}
+      .topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:transparent;border-bottom:1px solid rgba(15,23,42,0.04)}
+      .brand{font-weight:700;font-size:18px;color:var(--accent)}
+      .edit-btn{display:inline-block;padding:8px 12px;background:var(--accent);color:white;border-radius:8px;text-decoration:none;border:none}
+      .container{max-width:1200px;margin:24px auto;padding:0 16px}
+      .glass{background:var(--card);box-shadow:0 6px 20px rgba(15,23,42,0.06);border-radius:10px;padding:18px}
+      .blurred{filter:blur(4px);pointer-events:none}
+      .dark-toggle{cursor:pointer;padding:6px 10px;border-radius:8px;border:1px solid rgba(15,23,42,0.06);color:var(--muted);background:transparent}
+      /* layout helpers */
+      .layout{display:flex;gap:20px}
+      .sidebar{width:320px}
+      .main{flex:1}
+      .card + .card{margin-top:14px}
+      .small{font-size:13px;color:var(--muted)}
+      a{color:var(--accent)}
+    </style>
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="brand">{{ profile.name }}</div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <a href="javascript:;" id="editOpen" class="edit-btn">Edit</a>
+      </div>
+    </div>
+
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+
+    <!-- Login modal -->
+    <div id="loginModal" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;z-index:1000">
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5)"></div>
+      <div style="position:relative;z-index:1001;width:420px">
+        <div class="glass" style="padding:18px">
+          <h3 style="margin-top:0">Enter password to edit</h3>
+          <div id="loginError" style="color:#ffb4b4"></div>
+          <form id="loginForm">
+            <input name="username" placeholder="username" value="admin" style="width:100%;padding:8px;margin-bottom:8px" />
+            <input name="password" type="password" placeholder="password" style="width:100%;padding:8px;margin-bottom:8px" />
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+              <button type="button" id="loginCancel" class="dark-toggle">Cancel</button>
+              <button type="submit" class="edit-btn">Login</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Login modal handling
+      const editOpen = document.getElementById('editOpen');
+      const loginModal = document.getElementById('loginModal');
+      const loginForm = document.getElementById('loginForm');
+      const loginError = document.getElementById('loginError');
+      const loginCancel = document.getElementById('loginCancel');
+      const container = document.querySelector('.container');
+
+      function openLogin(){
+        loginModal.style.display='flex';
+        container.classList.add('blurred');
+      }
+      function closeLogin(){
+        loginModal.style.display='none';
+        container.classList.remove('blurred');
+        loginError.textContent='';
+      }
+
+      editOpen.addEventListener('click', (e)=>{ e.preventDefault(); openLogin(); });
+      loginCancel.addEventListener('click', closeLogin);
+
+      // CSRF helper
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+      }
+      const csrftoken = getCookie('csrftoken');
+
+      loginForm.addEventListener('submit', async (ev)=>{
+        ev.preventDefault();
+        const data = new FormData(loginForm);
+        const resp = await fetch('{% url "personal:login" %}', {method:'POST',headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrftoken},body:data});
+        if(resp.ok){
+          const js = await resp.json();
+          if(js.success){ closeLogin(); enableEditing(); }
+        } else {
+          const e = await resp.json(); loginError.textContent = e.error || 'Login failed';
+        }
+      });
+
+      // Enable inline editing after login
+      function enableEditing(){
+        // make editable fields contentEditable
+        document.querySelectorAll('[data-editable]').forEach(el=>{
+          el.contentEditable = true;
+          el.style.outline = '2px dashed rgba(124,58,237,0.25)';
+        });
+        // show save button
+        let sb = document.getElementById('inlineSave');
+        if(!sb){
+          sb = document.createElement('button'); sb.id='inlineSave'; sb.textContent='Save Changes'; sb.className='edit-btn';
+          sb.style.position='fixed'; sb.style.right='20px'; sb.style.bottom='20px'; sb.style.zIndex='1100';
+          document.body.appendChild(sb);
+          sb.addEventListener('click', saveInline);
+        }
+      }
+
+      async function saveInline(){
+        const payload = new FormData();
+        document.querySelectorAll('[data-field]').forEach(el=>{
+          const key = el.getAttribute('data-field');
+          payload.append(key, el.innerText.trim());
+        });
+        // photo input if present
+        const photoInput = document.getElementById('photoInput');
+        if(photoInput && photoInput.files.length) payload.append('photo', photoInput.files[0]);
+        const resp = await fetch('{% url "personal:update_profile" %}', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrftoken}, body: payload});
+        if(resp.ok){
+          const js = await resp.json();
+          alert('Saved');
+          // update photo if provided
+          if(js.profile.photo_url){ const img = document.querySelector('[data-field="photo_preview"]'); if(img) img.src = js.profile.photo_url }
+        } else {
+          const e = await resp.json(); alert(e.error || 'Save failed');
+        }
+      }
+
+      // On load: if already logged in (server session), enable editing
+      (async ()=>{
+        // try a lightweight check by requesting update_profile with GET (not allowed) to check auth? instead rely on a cookie flag
+      })();
+    </script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

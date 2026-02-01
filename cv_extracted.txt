@@ -1,0 +1,56 @@
+--- PAGE 1 ---
+K S
+AMAL ONI
+(cid:209)Kolkata,India(OpentoRelocate)|(cid:131)(+91)9426827891
+#kamalsoni3839@gmail.com|(cid:239)linkedin.com/in/kamalsonikgp|§github.com/kamalshowgit
+PROFESSIONAL SUMMARY
+DataAnalystinCustomerAnalyticswith2+yearsofexperiencesupportingCustomerdecisioning,CreditRisk,and
+portfolioanalyticsatHSBC.Hands-onexperienceinpredictivemodeling,modelvalidation,A/Btesting,upliftmodeling,
+andlarge-scaledataanalysisacross10M+customers. StrongbackgroundinPython,SQL,SAS,andMachineLearningto
+driveprofitablerisk,fraud,andmarketingdecisionsinregulatedenvironments. M.TechfromIITKharagpurand1stplace
+Kagglecompetitionwinner.
+EXPERIENCE
+HSBC Jun2024–Present
+GlobalDataAnalyst—Credit&CustomerAnalytics Kolkata,India
+• Designedandexecutedcreditspendandbehavior-basedsegmentationon6M+customersusingSQLandSAS,
+reducinghigh-limitcustomerdrop-offsandincreasingactivecustomersby20%.
+• Builtandoperationalizedriskandpropensitymodels(LogisticRegression,XGBoost)improvingloanandcreditcard
+approvalratesby2–5%whilemaintainingportfolioriskthresholds.
+• PerformedA/Btestingandupliftmodelingtoevaluaterepayment,utilization,andcross-sellbehavior,enabling
+data-drivencampaignandportfoliooptimization.
+• ConductedmodelvalidationandmonitoringusingPSI,CSI,KS,ROC-AUC,liftanalysis,binningdiagnostics,and
+hypothesistestingtoensurerobustness,fairness,andregulatorycompliance.
+• AutomatedEMOBandEOIdatapipelines,resolvinginefficientSQLaggregationlogicandreducingmanualeffortby
+35%,saving40+hourspersprint.
+• Deliveredanalytics-driveninsightsacrossapp,web,email,SMS,andlendingchannels,analyzing1M+customer
+interactionstosupportclosed-loopdecisioning.
+• Ensureddataquality,governance,andauditreadiness,generating300K+compliantleadspermonthwhile
+meetingGDPRandinternalriskcontrolstandards.
+iCreate Dec2022–Jan2023
+DataAnalyticsIntern Ahmedabad,India
+• Developedacreditdefaultpredictionmodelusingcustomerattributes,achieving85%accuracyandoutperforming
+baselineriskmodels.
+• Supportedanalyticsinitiativesfor50+early-stagestartups,collaboratingwithcross-functionalteamstoderive
+actionableinsightsfromunstructureddata.
+KEY PROJECTS
+BankruptcyPrediction|KaggleGlobalWinner|Python,XGBoost
+• Builtpredictivemodelsusing95financialindicators,achieving1stplacegloballywithaROC-AUCof0.91.
+• Appliedadvancedfeatureengineering,ensemblemodeling,andrigorouscross-validationtechniquestoensuremodel
+stability.
+TECHNICAL SKILLS
+Programming&Data: Python,SQL,SAS,PySpark,Excel/VBA
+MachineLearning: LogisticRegression,XGBoost,LightGBM,RandomForest,DecisionTrees
+ModelRisk&Validation: PSI,CSI,KSStatistic,ROC-AUC,LiftAnalysis,DriftDetection
+AnalyticsTechniques: CustomerSegmentation,A/BTesting,UpliftModeling,CampaignAnalytics
+Visualization&BI:PowerBI,Qlik,Matplotlib,Seaborn,Plotly
+DomainKnowledge: CreditRisk,BankingAnalytics,FraudDetection,PortfolioPerformance
+EDUCATION
+IndianInstituteofTechnology(IIT)Kharagpur 2024
+M.TechinInfrastructureManagement GPA:8.34/10
+VishwakarmaGovernmentEngineeringCollege(VGEC) 2021
+B.E.inCivilEngineering GPA:8.72/10
+CERTIFICATIONS & ACHIEVEMENTS
+Certifications: CS50(Harvard),PythonforDataScience(IITMadras),DataStructures&Algorithms(IITMadras),
+SEBI/NISMCertifiedInvestor
+Awards: 1stPlaceWorldwide-KaggleBankruptcyPrediction,EmployeeoftheYear(RisingStar)-HSBC(2025),Top1%
+inState(ClassXII)-FullySponsoredB.E.
