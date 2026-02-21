@@ -1,80 +1,395 @@
 <!doctype html>
 <html>
-  <body style="font-family:system-ui;padding:24px;max-width:900px;margin:24px auto;color:#111">
-    <h1>Edit Page</h1>
-    <p><a href="/">View site</a> | <a href="{% url 'personal:logout' %}">Logout</a></p>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Edit Portfolio</title>
+    <style>
+      :root {
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --text: #0f172a;
+        --muted: #64748b;
+        --accent: #0f766e;
+        --accent-soft: rgba(15, 118, 110, 0.1);
+        --danger: #dc2626;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background:
+          radial-gradient(1200px 500px at -10% -20%, rgba(15, 118, 110, 0.08), transparent),
+          radial-gradient(900px 500px at 110% -20%, rgba(14, 116, 144, 0.08), transparent),
+          var(--bg);
+        color: var(--text);
+      }
+      .shell {
+        max-width: 1180px;
+        margin: 24px auto;
+        padding: 0 16px 32px;
+      }
+      .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+      .top h1 {
+        margin: 0;
+        font-size: 28px;
+      }
+      .top-links {
+        display: flex;
+        gap: 10px;
+      }
+      .top-links a {
+        text-decoration: none;
+        color: var(--accent);
+        border: 1px solid rgba(15, 118, 110, 0.22);
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 14px;
+      }
+      .jump {
+        position: sticky;
+        top: 10px;
+        z-index: 20;
+        backdrop-filter: blur(8px);
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 12px;
+        padding: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .jump a {
+        text-decoration: none;
+        color: #0f172a;
+        background: rgba(15, 23, 42, 0.06);
+        border-radius: 999px;
+        padding: 7px 12px;
+        font-size: 13px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .panel {
+        background: var(--card);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+        transition: box-shadow 0.2s ease;
+      }
+      .panel:target,
+      .panel.focused {
+        box-shadow: 0 0 0 4px var(--accent-soft), 0 14px 30px rgba(15, 23, 42, 0.08);
+      }
+      .panel h2 {
+        margin: 0 0 10px;
+        font-size: 20px;
+      }
+      .panel p {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      form p {
+        margin: 0 0 10px;
+      }
+      form input,
+      form select,
+      form textarea {
+        width: 100%;
+        border: 1px solid rgba(15, 23, 42, 0.15);
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-size: 14px;
+      }
+      textarea { min-height: 86px; }
+      .actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 10px;
+      }
+      .btn {
+        border: 0;
+        background: var(--accent);
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      .btn.secondary {
+        background: rgba(15, 23, 42, 0.08);
+        color: #0f172a;
+        text-decoration: none;
+      }
+      .list {
+        margin: 12px 0 0;
+        padding: 0;
+        list-style: none;
+        border-top: 1px dashed rgba(15, 23, 42, 0.15);
+      }
+      .list li {
+        padding: 10px 0;
+        border-bottom: 1px dashed rgba(15, 23, 42, 0.12);
+      }
+      .item {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: flex-start;
+      }
+      .item-meta {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .item-tools {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .item-tools a {
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 12px;
+      }
+      .danger {
+        border: 0;
+        background: transparent;
+        color: var(--danger);
+        cursor: pointer;
+        font-size: 12px;
+        padding: 0;
+      }
+      .inline {
+        display: inline;
+      }
+      @media (max-width: 980px) {
+        .grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="top">
+        <h1>Edit Portfolio</h1>
+        <div class="top-links">
+          <a href="/">View site</a>
+          <a href="{% url 'personal:logout' %}">Logout</a>
+        </div>
+      </div>
 
-    <h2>Profile</h2>
-    <form method="post" enctype="multipart/form-data">{% csrf_token %}
-      {{ pform.as_p }}
-      <button type="submit">Save profile</button>
-    </form>
+      <nav class="jump">
+        <a href="#profile">Profile</a>
+        <a href="#links">Quick Links</a>
+        <a href="#projects">Projects</a>
+        <a href="#experience">Experience</a>
+        <a href="#education">Education</a>
+        <a href="#notes">Notes</a>
+      </nav>
 
-    <hr>
-    <h2>Quick links</h2>
-    <form method="post" action="{% url 'personal:add_link' %}">{% csrf_token %}
-      {{ qform.as_p }}
-      <button>Add link</button>
-    </form>
-    <ul>
-      {% for l in links %}
-        <li>{{ l.title }} — <a href="{% url 'personal:delete_link' l.pk %}">delete</a></li>
-      {% empty %}<li>No links</li>{% endfor %}
-    </ul>
+      <div class="grid">
+        <section class="panel" id="profile">
+          <h2>Profile</h2>
+          <p>Updates hero details and contact info.</p>
+          <form method="post" enctype="multipart/form-data">{% csrf_token %}
+            {{ pform.as_p }}
+            <div class="actions">
+              <button class="btn" type="submit">Save Profile</button>
+            </div>
+          </form>
+        </section>
 
-    <hr>
-    <h2>Projects</h2>
-    <form method="post" enctype="multipart/form-data" action="{% url 'personal:add_project' %}">{% csrf_token %}
-      {{ prform.as_p }}
-      <button>Add project</button>
-    </form>
-    <ul>
-      {% for p in projects %}
-        <li>{{ p.title }} — <a href="{% url 'personal:delete_project' p.pk %}">delete</a></li>
-      {% empty %}<li>No projects</li>{% endfor %}
-    </ul>
+        <section class="panel" id="links">
+          <h2>Quick Links</h2>
+          <p>{% if focus_section == 'links' and focus_id %}Update selected link.{% else %}Add a new quick link.{% endif %}</p>
+          <form method="post" action="{% url 'personal:add_link' %}">{% csrf_token %}
+            {% if focus_section == 'links' and focus_id %}<input type="hidden" name="link_id" value="{{ focus_id }}">{% endif %}
+            {{ qform.as_p }}
+            <div class="actions">
+              <button class="btn" type="submit">{% if focus_section == 'links' and focus_id %}Update Link{% else %}Add Link{% endif %}</button>
+              {% if focus_section == 'links' and focus_id %}<a class="btn secondary" href="{% url 'personal:edit' %}?section=links">Cancel</a>{% endif %}
+            </div>
+          </form>
+          <ul class="list">
+            {% for l in links %}
+              <li data-item-id="{{ l.pk }}">
+                <div class="item">
+                  <div>
+                    <strong>{{ l.title }}</strong>
+                    <div class="item-meta">{{ l.url }}</div>
+                  </div>
+                  <div class="item-tools">
+                    <a href="{% url 'personal:edit' %}?section=links&id={{ l.pk }}">Edit</a>
+                    <form class="inline" method="post" action="{% url 'personal:delete_link' l.pk %}" onsubmit="return confirm('Delete this link?')">{% csrf_token %}<button class="danger" type="submit">Delete</button></form>
+                  </div>
+                </div>
+              </li>
+            {% empty %}
+              <li>No links yet.</li>
+            {% endfor %}
+          </ul>
+        </section>
 
-    <hr>
-    <h2>Experience</h2>
-    <form method="post" action="{% url 'personal:add_experience' %}">{% csrf_token %}
-      {{ exform.as_p }}
-      <button>Add experience</button>
-    </form>
-    <ul>
-      {% for ex in experiences %}
-        <li><strong>{{ ex.title }}</strong> @ {{ ex.employer }} ({{ ex.start }}{% if ex.end %} – {{ ex.end }}{% endif %}) — <a href="{% url 'personal:delete_experience' ex.pk %}">delete</a></li>
-      {% empty %}<li>No experiences</li>{% endfor %}
-    </ul>
+        <section class="panel" id="projects">
+          <h2>Projects</h2>
+          <p>{% if focus_section == 'projects' and focus_id %}Update selected project.{% else %}Add a new project.{% endif %}</p>
+          <form method="post" enctype="multipart/form-data" action="{% url 'personal:add_project' %}">{% csrf_token %}
+            {% if focus_section == 'projects' and focus_id %}<input type="hidden" name="project_id" value="{{ focus_id }}">{% endif %}
+            {{ prform.as_p }}
+            <div class="actions">
+              <button class="btn" type="submit">{% if focus_section == 'projects' and focus_id %}Update Project{% else %}Add Project{% endif %}</button>
+              {% if focus_section == 'projects' and focus_id %}<a class="btn secondary" href="{% url 'personal:edit' %}?section=projects">Cancel</a>{% endif %}
+            </div>
+          </form>
+          <ul class="list">
+            {% for p in projects %}
+              <li data-item-id="{{ p.pk }}">
+                <div class="item">
+                  <div>
+                    <strong>{{ p.title }}</strong>
+                    <div class="item-meta">{{ p.description|truncatechars:90 }}</div>
+                  </div>
+                  <div class="item-tools">
+                    <a href="{% url 'personal:edit' %}?section=projects&id={{ p.pk }}">Edit</a>
+                    <form class="inline" method="post" action="{% url 'personal:delete_project' p.pk %}" onsubmit="return confirm('Delete this project?')">{% csrf_token %}<button class="danger" type="submit">Delete</button></form>
+                  </div>
+                </div>
+              </li>
+            {% empty %}
+              <li>No projects yet.</li>
+            {% endfor %}
+          </ul>
+        </section>
 
-    <hr>
-    <h2>Education</h2>
-    <form method="post" action="{% url 'personal:add_education' %}">{% csrf_token %}
-      {{ edform.as_p }}
-      <button>Add education</button>
-    </form>
-    <ul>
-      {% for ed in educations %}
-        <li><strong>{{ ed.degree }}</strong> from {{ ed.institution }} ({{ ed.year }}) — <a href="{% url 'personal:delete_education' ed.pk %}">delete</a></li>
-      {% empty %}<li>No education entries</li>{% endfor %}
-    </ul>
+        <section class="panel" id="experience">
+          <h2>Experience</h2>
+          <p>{% if focus_section == 'experience' and focus_id %}Update selected experience.{% else %}Add experience entry.{% endif %}</p>
+          <form method="post" action="{% url 'personal:add_experience' %}">{% csrf_token %}
+            {% if focus_section == 'experience' and focus_id %}<input type="hidden" name="experience_id" value="{{ focus_id }}">{% endif %}
+            {{ exform.as_p }}
+            <div class="actions">
+              <button class="btn" type="submit">{% if focus_section == 'experience' and focus_id %}Update Experience{% else %}Add Experience{% endif %}</button>
+              {% if focus_section == 'experience' and focus_id %}<a class="btn secondary" href="{% url 'personal:edit' %}?section=experience">Cancel</a>{% endif %}
+            </div>
+          </form>
+          <ul class="list">
+            {% for ex in experiences %}
+              <li data-item-id="{{ ex.pk }}">
+                <div class="item">
+                  <div>
+                    <strong>{{ ex.title }}</strong>
+                    <div class="item-meta">{{ ex.employer }} | {{ ex.start }}{% if ex.end %} - {{ ex.end }}{% endif %}</div>
+                  </div>
+                  <div class="item-tools">
+                    <a href="{% url 'personal:edit' %}?section=experience&id={{ ex.pk }}">Edit</a>
+                    <form class="inline" method="post" action="{% url 'personal:delete_experience' ex.pk %}" onsubmit="return confirm('Delete this experience?')">{% csrf_token %}<button class="danger" type="submit">Delete</button></form>
+                  </div>
+                </div>
+              </li>
+            {% empty %}
+              <li>No experiences yet.</li>
+            {% endfor %}
+          </ul>
+        </section>
 
-    <hr>
-    <h2>Notes / Todo (Private - Only You Can See)</h2>
-    <form method="post" action="{% url 'personal:add_note' %}">{% csrf_token %}
-      {{ nform.as_p }}
-      <button>Add note</button>
-    </form>
-    
-    {% regroup notes by folder as notes_by_folder %}
-    {% for folder_group in notes_by_folder %}
-      <h3>{{ folder_group.grouper|title }}</h3>
-      <ul>
-        {% for n in folder_group.list %}
-          <li>{% if n.completed %}✅{% endif %} <strong>{{ n.title }}</strong> <br><small>{{ n.content|truncatechars:100 }}</small> — <a href="{% url 'personal:toggle_note' n.pk %}">toggle</a> <a href="{% url 'personal:delete_note' n.pk %}">delete</a></li>
-        {% endfor %}
-      </ul>
-    {% empty %}
-      <p>No notes yet.</p>
-    {% endfor %}
+        <section class="panel" id="education">
+          <h2>Education</h2>
+          <p>{% if focus_section == 'education' and focus_id %}Update selected education entry.{% else %}Add education entry.{% endif %}</p>
+          <form method="post" action="{% url 'personal:add_education' %}">{% csrf_token %}
+            {% if focus_section == 'education' and focus_id %}<input type="hidden" name="education_id" value="{{ focus_id }}">{% endif %}
+            {{ edform.as_p }}
+            <div class="actions">
+              <button class="btn" type="submit">{% if focus_section == 'education' and focus_id %}Update Education{% else %}Add Education{% endif %}</button>
+              {% if focus_section == 'education' and focus_id %}<a class="btn secondary" href="{% url 'personal:edit' %}?section=education">Cancel</a>{% endif %}
+            </div>
+          </form>
+          <ul class="list">
+            {% for ed in educations %}
+              <li data-item-id="{{ ed.pk }}">
+                <div class="item">
+                  <div>
+                    <strong>{{ ed.degree }}</strong>
+                    <div class="item-meta">{{ ed.institution }} | {{ ed.year }}</div>
+                  </div>
+                  <div class="item-tools">
+                    <a href="{% url 'personal:edit' %}?section=education&id={{ ed.pk }}">Edit</a>
+                    <form class="inline" method="post" action="{% url 'personal:delete_education' ed.pk %}" onsubmit="return confirm('Delete this education entry?')">{% csrf_token %}<button class="danger" type="submit">Delete</button></form>
+                  </div>
+                </div>
+              </li>
+            {% empty %}
+              <li>No education entries yet.</li>
+            {% endfor %}
+          </ul>
+        </section>
+
+        <section class="panel" id="notes">
+          <h2>Notes / Todo</h2>
+          <p>{% if focus_section == 'notes' and focus_id %}Update selected note.{% else %}Add a new note.{% endif %}</p>
+          <form method="post" action="{% url 'personal:add_note' %}">{% csrf_token %}
+            {% if focus_section == 'notes' and focus_id %}<input type="hidden" name="note_id" value="{{ focus_id }}">{% endif %}
+            {{ nform.as_p }}
+            <div class="actions">
+              <button class="btn" type="submit">{% if focus_section == 'notes' and focus_id %}Update Note{% else %}Add Note{% endif %}</button>
+              {% if focus_section == 'notes' and focus_id %}<a class="btn secondary" href="{% url 'personal:edit' %}?section=notes">Cancel</a>{% endif %}
+            </div>
+          </form>
+
+          {% regroup notes by folder as notes_by_folder %}
+          {% for folder_group in notes_by_folder %}
+            <h3>{{ folder_group.grouper|title }}</h3>
+            <ul class="list">
+              {% for n in folder_group.list %}
+                <li data-item-id="{{ n.pk }}">
+                  <div class="item">
+                    <div>
+                      <strong>{% if n.completed %}✓ {% endif %}{{ n.title }}</strong>
+                      <div class="item-meta">{{ n.content|truncatechars:90 }}</div>
+                    </div>
+                    <div class="item-tools">
+                      <a href="{% url 'personal:edit' %}?section=notes&id={{ n.pk }}">Edit</a>
+                      <form class="inline" method="post" action="{% url 'personal:toggle_note' n.pk %}">{% csrf_token %}<button class="danger" type="submit">{% if n.completed %}Mark Open{% else %}Mark Done{% endif %}</button></form>
+                      <form class="inline" method="post" action="{% url 'personal:delete_note' n.pk %}" onsubmit="return confirm('Delete this note?')">{% csrf_token %}<button class="danger" type="submit">Delete</button></form>
+                    </div>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% empty %}
+            <p>No notes yet.</p>
+          {% endfor %}
+        </section>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const section = '{{ focus_section|default:"" }}';
+        const fid = '{{ focus_id|default:"" }}';
+        if (!section) return;
+        const el = document.getElementById(section);
+        if (el) {
+          el.classList.add('focused');
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        if (fid) {
+          const item = document.querySelector('[data-item-id="' + fid + '"]');
+          if (item) {
+            item.style.transition = 'background-color 240ms ease';
+            item.style.backgroundColor = 'rgba(15, 118, 110, 0.08)';
+            setTimeout(() => { item.style.backgroundColor = 'transparent'; }, 2200);
+          }
+        }
+      })();
+    </script>
   </body>
 </html>

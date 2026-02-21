@@ -28,15 +28,18 @@
       .card + .card{margin-top:14px}
       .small{font-size:13px;color:var(--muted)}
       a{color:var(--accent)}
+      @media (max-width: 760px){
+        .topbar{padding:10px 14px}
+        .brand{font-size:16px}
+        .container{margin:16px auto;padding:0 12px}
+      }
     </style>
     {% block head %}{% endblock %}
   </head>
   <body>
     <div class="topbar">
       <div class="brand">{{ profile.name }}</div>
-      <div style="display:flex;gap:12px;align-items:center">
-        <a href="javascript:;" id="editOpen" class="edit-btn">Edit</a>
-      </div>
+      <div></div>
     </div>
 
     <div class="container">
@@ -64,12 +67,12 @@
 
     <script>
       // Login modal handling
-      const editOpen = document.getElementById('editOpen');
       const loginModal = document.getElementById('loginModal');
       const loginForm = document.getElementById('loginForm');
       const loginError = document.getElementById('loginError');
       const loginCancel = document.getElementById('loginCancel');
       const container = document.querySelector('.container');
+      const isLoggedIn = {{ is_logged_in|yesno:"true,false" }};
 
       function openLogin(){
         loginModal.style.display='flex';
@@ -81,8 +84,21 @@
         loginError.textContent='';
       }
 
-      editOpen.addEventListener('click', (e)=>{ e.preventDefault(); openLogin(); });
-      loginCancel.addEventListener('click', closeLogin);
+      if (loginCancel) {
+        loginCancel.addEventListener('click', closeLogin);
+      }
+
+      // Hidden admin access: Shift + E
+      document.addEventListener('keydown', (e) => {
+        if (e.shiftKey && (e.key === 'E' || e.key === 'e')) {
+          e.preventDefault();
+          if (isLoggedIn) {
+            window.location.href = '{% url "personal:edit" %}';
+            return;
+          }
+          openLogin();
+        }
+      });
 
       // CSRF helper
       function getCookie(name) {
@@ -101,13 +117,13 @@
       }
       const csrftoken = getCookie('csrftoken');
 
-      loginForm.addEventListener('submit', async (ev)=>{
+      loginForm?.addEventListener('submit', async (ev)=>{
         ev.preventDefault();
         const data = new FormData(loginForm);
         const resp = await fetch('{% url "personal:login" %}', {method:'POST',headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrftoken},body:data});
         if(resp.ok){
           const js = await resp.json();
-          if(js.success){ closeLogin(); enableEditing(); }
+          if(js.success){ closeLogin(); enableEditing(); location.reload(); }
         } else {
           const e = await resp.json(); loginError.textContent = e.error || 'Login failed';
         }
@@ -131,6 +147,11 @@
       }
 
       async function saveInline(){
+        const btn = document.getElementById('inlineSave');
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'Saving...';
+        }
         const payload = new FormData();
         document.querySelectorAll('[data-field]').forEach(el=>{
           const key = el.getAttribute('data-field');
@@ -142,18 +163,26 @@
         const resp = await fetch('{% url "personal:update_profile" %}', {method:'POST', headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrftoken}, body: payload});
         if(resp.ok){
           const js = await resp.json();
-          alert('Saved');
+          if (btn) {
+            btn.textContent = 'Saved';
+            setTimeout(() => { btn.textContent = 'Save Changes'; btn.disabled = false; }, 900);
+          }
           // update photo if provided
           if(js.profile.photo_url){ const img = document.querySelector('[data-field="photo_preview"]'); if(img) img.src = js.profile.photo_url }
         } else {
-          const e = await resp.json(); alert(e.error || 'Save failed');
+          const e = await resp.json();
+          if (btn) {
+            btn.textContent = 'Retry Save';
+            btn.disabled = false;
+          }
+          alert(e.error || 'Save failed');
         }
       }
 
       // On load: if already logged in (server session), enable editing
-      (async ()=>{
-        // try a lightweight check by requesting update_profile with GET (not allowed) to check auth? instead rely on a cookie flag
-      })();
+      if(document.querySelector('a[href*="logout"]')){
+        enableEditing();
+      }
     </script>
     {% block scripts %}{% endblock %}
   </body>

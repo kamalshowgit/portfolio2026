@@ -21,4 +21,8 @@ urlpatterns = [
     path('toggle_note/<int:pk>/', views.toggle_note, name='toggle_note'),
     path('delete_note/<int:pk>/', views.delete_note, name='delete_note'),
     path('contact/', views.contact_submit, name='contact'),
+    path('api/calendar_todos/', views.calendar_todos, name='calendar_todos'),
+    path('api/calendar_todos/add/', views.add_calendar_todo, name='add_calendar_todo'),
+    path('api/calendar_todos/<int:pk>/toggle/', views.toggle_calendar_todo, name='toggle_calendar_todo'),
+    path('api/calendar_todos/<int:pk>/delete/', views.delete_calendar_todo, name='delete_calendar_todo'),
 ]

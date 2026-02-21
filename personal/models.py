@@ -90,3 +90,17 @@ class ContactMessage(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+
+
+class CalendarTodo(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='calendar_todos')
+    day = models.DateField()
+    text = models.CharField(max_length=220)
+    completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.day} - {self.text}"
+
+    class Meta:
+        ordering = ['completed', '-created_at']

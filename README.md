@@ -1,40 +1,67 @@
-Personal Django site scaffold
+# Personal Portfolio (Django)
 
-This workspace contains a minimal Django project (`siteproject`) and a `personal` app that provides:
+Production-ready Django portfolio with:
+- Public profile/CV page
+- Private edit area (session login)
+- Calendar todo widget
+- Contact form with DB + email delivery
 
-- A public CV-like page at `/` showing profile, links, projects, and notes.
-- An edit interface at `/edit/` protected by a dummy login (`admin` / `changeme`) where you can edit profile, add/remove links, projects, and notes.
-
-Quick setup (on PythonAnywhere or your environment):
-
-1. Create a virtualenv and activate it.
+## Local Setup
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env
 ```
 
-2. Run migrations and create a superuser (optional):
+Set env vars from `.env.example` as needed, then:
 
 ```bash
-python manage.py makemigrations
 python manage.py migrate
-python manage.py createsuperuser
-```
-
-3. Run the development server locally:
-
-```bash
+python manage.py collectstatic --noinput
 python manage.py runserver
 ```
 
-4. On PythonAnywhere: create a web app, point WSGI to `siteproject.wsgi.application`, upload static/media, and set virtualenv. Collect static files:
+## Production Checklist
+
+1. Set these required env vars:
+- `DEBUG=false`
+- `SECRET_KEY=<strong-secret>`
+- `ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com`
+- `PERSONAL_EDIT_USERNAME` and `PERSONAL_EDIT_PASSWORD`
+
+2. Recommended env vars:
+- `CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com`
+- `DATABASE_URL=postgres://...`
+- SMTP vars (`EMAIL_*`, `CONTACT_RECEIVER_EMAIL`)
+
+3. Run migrations and collect static:
 
 ```bash
-python manage.py collectstatic
+python manage.py migrate
+python manage.py collectstatic --noinput
 ```
 
-Notes:
-- Dummy credentials for the edit interface are `admin` / `changeme`. Change them in `personal/views.py`.
-- Adjust `siteproject/settings.py` for production (SECRET_KEY, DEBUG=False, ALLOWED_HOSTS).
+4. Run app server:
+
+```bash
+gunicorn siteproject.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
+```
+
+Or use:
+
+```bash
+Procfile
+```
+
+## Security Notes
+
+- `DEBUG=false` enables secure defaults in `settings.py`
+- HTTPS/cookie/HSTS settings are env-configurable
+- Edit login credentials are no longer hardcoded; use env vars
+
+## Static/Media
+
+- Static: served by WhiteNoise from `STATIC_ROOT`
+- Media: user uploads should be served by your reverse proxy/object storage in production

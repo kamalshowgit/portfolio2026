@@ -2,283 +2,981 @@
 {% block title %}{{ profile.name }} — {{ profile.title }}{% endblock %}
 {% block content %}
   <style>
-    .hero { display: grid; grid-template-columns: 280px 1fr; gap: 40px; margin-bottom: 40px; align-items: start; }
-    .hero-photo { width: 280px; height: 350px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; overflow: hidden; box-shadow: 0 12px 30px rgba(15,23,42,0.12); }
-    .hero-photo img { width: 100%; height: 100%; object-fit: cover; }
-    .hero-info h1 { font-size: 42px; font-weight: 800; margin: 0 0 8px 0; line-height: 1.2; }
-    .hero-info .title { font-size: 20px; color: var(--accent); font-weight: 600; margin-bottom: 16px; }
-    .hero-info .bio { font-size: 16px; line-height: 1.6; color: #334155; margin-bottom: 16px; max-width: 600px; }
-    .hero-info .contact { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 20px; }
-    .contact-item { font-size: 13px; display: flex; gap: 6px; }
-    .contact-item span { color: var(--muted); }
-    .contact-item a { text-decoration: none; font-weight: 500; }
-    .section { margin-bottom: 48px; }
-    .section h2 { font-size: 24px; font-weight: 700; margin: 0 0 20px 0; padding-bottom: 12px; border-bottom: 2px solid rgba(15,23,42,0.08); }
-    .entry { background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%); border: 1px solid rgba(15,23,42,0.06); border-radius: 10px; padding: 18px; margin-bottom: 14px; }
-    .entry-header { display: flex; justify-content: space-between; align-items: flex-start; }
-    .entry-title { font-weight: 700; font-size: 16px; color: #0f172a; }
-    .entry-meta { font-size: 13px; color: var(--accent); font-weight: 500; margin-top: 4px; }
-    .entry-desc { font-size: 14px; line-height: 1.5; color: #334155; margin-top: 10px; }
-    .sidebar-section { background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%); border: 1px solid rgba(15,23,42,0.06); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
-    .sidebar-section h3 { font-size: 16px; font-weight: 700; margin: 0 0 14px 0; }
-    .link-item { padding: 8px 0; border-bottom: 1px solid rgba(15,23,42,0.04); }
-    .link-item:last-child { border-bottom: none; }
-    .link-item a { text-decoration: none; font-weight: 500; }
-    .note-item { padding: 10px 0; border-bottom: 1px dashed rgba(15,23,42,0.08); }
-    .note-item:last-child { border-bottom: none; }
-    .note-title { font-weight: 600; font-size: 14px; }
-    .note-content { font-size: 12px; color: var(--muted); margin-top: 4px; }
-    @media (max-width: 900px) {
-      .hero { grid-template-columns: 1fr; gap: 28px; }
-      .hero-photo { width: 100%; height: 300px; }
-      .hero-info h1 { font-size: 32px; }
+    :root {
+      --paper: #fffef9;
+      --ink: #161b22;
+      --ink-soft: #4d5866;
+      --edge: rgba(22, 27, 34, 0.12);
+      --accent-soft: rgba(15, 118, 110, 0.12);
+      --accent: #0f766e;
+    }
+    .page {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 34px;
+      align-items: start;
+    }
+    .reader {
+      background: var(--paper);
+      border: 1px solid var(--edge);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+    }
+    .identity {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 20px;
+      align-items: start;
+      margin-bottom: 26px;
+    }
+    .avatar {
+      width: 160px;
+      height: 190px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--edge);
+      background: linear-gradient(140deg, #f4f8ff, #ebfffa);
+    }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .name {
+      font-size: clamp(28px, 5vw, 42px);
+      line-height: 1.05;
+      margin: 2px 0 8px;
+      letter-spacing: -0.02em;
+    }
+    .title {
+      color: var(--accent);
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .bio {
+      color: var(--ink-soft);
+      line-height: 1.72;
+      font-size: 16px;
+      max-width: 72ch;
+    }
+    .meta {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chip {
+      border: 1px solid var(--edge);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      color: var(--ink-soft);
+      text-decoration: none;
+    }
+    .section {
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px dashed var(--edge);
+    }
+    .section h2 {
+      margin: 0 0 14px;
+      font-size: 21px;
+    }
+    .entry {
+      padding: 14px 0;
+      border-bottom: 1px dashed rgba(22, 27, 34, 0.1);
+    }
+    .entry:last-child {
+      border-bottom: 0;
+      padding-bottom: 4px;
+    }
+    .entry-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+    .entry strong {
+      font-size: 16px;
+    }
+    .entry .when {
+      color: var(--ink-soft);
+      font-size: 13px;
+    }
+    .entry p {
+      margin: 7px 0 0;
+      color: var(--ink-soft);
+      line-height: 1.62;
+      font-size: 14px;
+    }
+    .timeline {
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px dashed var(--edge);
+    }
+    .timeline h2 {
+      margin: 0 0 14px;
+      font-size: 21px;
+    }
+    .timeline-list {
+      position: relative;
+      margin: 0;
+      padding: 0 0 0 18px;
+      list-style: none;
+      border-left: 2px solid rgba(15, 118, 110, 0.25);
+    }
+    .timeline-item {
+      position: relative;
+      padding: 0 0 14px 14px;
+    }
+    .timeline-item:last-child {
+      padding-bottom: 2px;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -7px;
+      top: 4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #0f766e;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14);
+    }
+    .timeline-kicker {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .timeline-title {
+      margin: 2px 0 2px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .timeline-meta {
+      color: var(--ink-soft);
+      font-size: 13px;
+    }
+    .skill-group {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .skill-row {
+      font-size: 14px;
+      color: var(--ink-soft);
+      line-height: 1.55;
+    }
+    .skill-row strong {
+      color: var(--ink);
+    }
+    .achievement-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--ink-soft);
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .widget-stack {
+      position: sticky;
+      top: 12px;
+      display: grid;
+      gap: 12px;
+      align-self: start;
+    }
+    .widget {
+      background: #fff;
+      border: 1px solid var(--edge);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+    .widget h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .widget h3 a {
+      color: var(--accent);
+      font-size: 12px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .link-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px dashed rgba(22, 27, 34, 0.1);
+    }
+    .link-row:last-child {
+      border-bottom: 0;
+    }
+    .link-row a {
+      text-decoration: none;
+      color: #1f2937;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+    .cal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .cal-head button {
+      border: 0;
+      background: rgba(22, 27, 34, 0.08);
+      border-radius: 8px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      font-size: 11px;
+    }
+    .dow {
+      text-align: center;
+      color: var(--ink-soft);
+      font-weight: 600;
+      padding: 2px 0;
+    }
+    .cal-day {
+      border: 1px solid rgba(22, 27, 34, 0.08);
+      border-radius: 8px;
+      min-height: 33px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      background: #fff;
+      font-size: 12px;
+      position: relative;
+    }
+    .cal-day:hover {
+      background: #f9fafb;
+    }
+    .cal-day.today {
+      background: #0f766e;
+      color: #fff;
+      border-color: #0f766e;
+      font-weight: 700;
+    }
+    .cal-day.active {
+      box-shadow: 0 0 0 2px var(--accent-soft) inset;
+      border-color: rgba(15, 118, 110, 0.5);
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      position: absolute;
+      bottom: 3px;
+      right: 3px;
+    }
+    .todo-title {
+      margin: 10px 0 6px;
+      font-size: 12px;
+      color: var(--ink-soft);
+    }
+    .todo-form {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .todo-form input,
+    .todo-form button,
+    #contactForm input,
+    #contactForm textarea,
+    #contactForm button {
+      width: 100%;
+      border: 1px solid rgba(22, 27, 34, 0.16);
+      border-radius: 9px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-family: inherit;
+    }
+    .todo-form button,
+    #contactForm button,
+    .start-game {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .todo-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 6px;
+      max-height: 186px;
+      overflow: auto;
+    }
+    .todo-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border: 1px solid rgba(22, 27, 34, 0.08);
+      border-radius: 9px;
+      padding: 7px;
+      font-size: 12px;
+      min-width: 0;
+    }
+    .todo-item > span:first-child {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      flex: 1;
+    }
+    .todo-item.done {
+      opacity: 0.65;
+      text-decoration: line-through;
+    }
+    .todo-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .mini-btn {
+      border: 0;
+      background: rgba(22, 27, 34, 0.08);
+      border-radius: 6px;
+      padding: 4px 7px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .mini-btn.danger {
+      color: #b91c1c;
+      background: rgba(185, 28, 28, 0.12);
+    }
+    .note {
+      color: var(--ink-soft);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .game-box {
+      border: 1px dashed rgba(22, 27, 34, 0.2);
+      border-radius: 12px;
+      margin-top: 8px;
+      background: linear-gradient(165deg, #f9fbff, #f7fffc);
+      padding: 10px;
+    }
+    .ttt-board {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .ttt-cell {
+      border: 1px solid rgba(22, 27, 34, 0.18);
+      border-radius: 10px;
+      aspect-ratio: 1 / 1;
+      background: #fff;
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 22px;
+      cursor: pointer;
+    }
+    .ttt-cell[disabled] {
+      cursor: default;
+      opacity: 0.9;
+    }
+    .game-meta {
+      font-size: 12px;
+      color: var(--ink-soft);
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 980px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+      .widget-stack {
+        position: static;
+      }
+    }
+    @media (max-width: 680px) {
+      .reader {
+        padding: 18px;
+      }
+      .identity {
+        grid-template-columns: 1fr;
+      }
+      .avatar {
+        width: 120px;
+        height: 144px;
+      }
+      .name {
+        font-size: 31px;
+      }
     }
   </style>
 
-  <!-- Hero section -->
-  <div class="hero">
-    <div class="hero-photo">
-      {% if profile.photo %}
-        <img src="{{ profile.photo.url }}" alt="profile photo" data-field="photo_preview">
-      {% else %}
-        <div style="width:100%;height:100%;background:linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);display:flex;align-items:center;justify-content:center;color:var(--muted)">Photo</div>
-      {% endif %}
-    </div>
-    <div class="hero-info">
-      <h1 data-editable data-field="name">{{ profile.name }}</h1>
-      <div class="title" data-editable data-field="title">{{ profile.title }}</div>
-      <div class="bio" data-editable data-field="bio">{{ profile.bio|linebreaksbr }}</div>
-      <div class="contact">
-        {% if profile.email %}
-          <div class="contact-item"><span>✉</span><a href="mailto:{{ profile.email }}">{{ profile.email }}</a></div>
-        {% endif %}
-        {% if profile.phone %}
-          <div class="contact-item"><span>📱</span><span>{{ profile.phone }}</span></div>
-        {% endif %}
-        {% if profile.location %}
-          <div class="contact-item"><span>📍</span><span>{{ profile.location }}</span></div>
-        {% endif %}
-      </div>
-    </div>
-  </div>
+  <div class="page">
+    <main class="reader">
+      <section class="identity">
+        <div class="avatar">
+          {% if profile.photo %}
+            <img src="{{ profile.photo.url }}" alt="Profile" data-field="photo_preview">
+          {% else %}
+            <div style="width:100%;height:100%;display:grid;place-items:center;color:#6b7280;font-size:13px">Photo</div>
+          {% endif %}
+        </div>
+        <div>
+          <h1 class="name" data-editable data-field="name" style="{% if is_logged_in %}cursor:text;outline:2px dashed rgba(15,118,110,0.2){% endif %}">{{ profile.name }}</h1>
+          <div class="title" data-editable data-field="title" style="{% if is_logged_in %}cursor:text;outline:2px dashed rgba(15,118,110,0.2){% endif %}">{{ profile.title }}</div>
+          <div class="bio" data-editable data-field="bio" style="{% if is_logged_in %}cursor:text;outline:2px dashed rgba(15,118,110,0.2){% endif %}">{{ profile.bio|linebreaksbr }}</div>
+          <div class="meta">
+            {% if profile.email %}<a class="chip" href="mailto:{{ profile.email }}">{{ profile.email }}</a>{% endif %}
+            {% if profile.phone %}<span class="chip">{{ profile.phone }}</span>{% endif %}
+            {% if profile.location %}<span class="chip">{{ profile.location }}</span>{% endif %}
+            {% if profile.linkedin %}<a class="chip" href="{{ profile.linkedin }}" target="_blank">LinkedIn</a>{% endif %}
+            {% if profile.github %}<a class="chip" href="{{ profile.github }}" target="_blank">GitHub</a>{% endif %}
+          </div>
+        </div>
+      </section>
 
-  <!-- Main content + sidebar -->
-  <div style="display: grid; grid-template-columns: 1fr 320px; gap: 40px;">
-    <div>
-      <!-- Experience section -->
+      {% if timeline %}
+        <section class="timeline">
+          <h2>Career Timeline</h2>
+          <ul class="timeline-list">
+            {% for t in timeline %}
+              <li class="timeline-item">
+                <div class="timeline-kicker">{{ t.kind }}</div>
+                <div class="timeline-title">{{ t.title }}</div>
+                <div class="timeline-meta">{{ t.subtitle }}{% if t.period %} · {{ t.period }}{% endif %}</div>
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% endif %}
+
       {% if experiences %}
-        <div class="section">
+        <section class="section">
           <h2>Experience</h2>
           {% for ex in experiences %}
-            <div class="entry">
-              <div class="entry-header">
-                <div>
-                  <div class="entry-title">{{ ex.employer }}</div>
-                  {% if ex.title %}<div class="entry-meta">{{ ex.title }}</div>{% endif %}
-                  <div class="entry-meta">{{ ex.start }}{% if ex.end %} – {{ ex.end }}{% endif %}{% if ex.location %} • {{ ex.location }}{% endif %}</div>
-                </div>
+            <article class="entry">
+              <div class="entry-top">
+                <strong>{{ ex.title|default:ex.employer }}</strong>
+                <span class="when">{{ ex.start }}{% if ex.end %} - {{ ex.end }}{% endif %}</span>
               </div>
-              {% if ex.description %}<div class="entry-desc">{{ ex.description|linebreaksbr }}</div>{% endif %}
-            </div>
+              <div class="when">{{ ex.employer }}{% if ex.location %} · {{ ex.location }}{% endif %}</div>
+              {% if ex.description %}<p>{{ ex.description|linebreaksbr }}</p>{% endif %}
+            </article>
           {% endfor %}
-        </div>
+        </section>
       {% endif %}
 
-      <!-- Education section -->
-      {% if educations %}
-        <div class="section">
-          <h2>Education</h2>
-          {% for ed in educations %}
-            <div class="entry">
-              <div class="entry-title">{{ ed.institution }}</div>
-              {% if ed.degree %}<div class="entry-meta">{{ ed.degree }}</div>{% endif %}
-              <div class="entry-meta">{{ ed.year }}</div>
-              {% if ed.details %}<div class="entry-desc">{{ ed.details|linebreaksbr }}</div>{% endif %}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      <!-- Projects section -->
       {% if projects %}
-        <div class="section">
+        <section class="section">
           <h2>Projects</h2>
           {% for p in projects %}
-            <div class="entry">
-              <div class="entry-title">{{ p.title }}</div>
-              {% if p.description %}<div class="entry-desc">{{ p.description|linebreaksbr }}</div>{% endif %}
-            </div>
+            <article class="entry">
+              <div class="entry-top">
+                <strong>{{ p.title }}</strong>
+                {% if p.url %}<a class="chip" href="{{ p.url }}" target="_blank">Visit</a>{% endif %}
+              </div>
+              {% if p.description %}<p>{{ p.description|linebreaksbr }}</p>{% endif %}
+            </article>
           {% endfor %}
-        </div>
-      {% endif %}
-    </div>
-
-    <!-- Sidebar -->
-    <aside>
-      <!-- Quick Links -->
-      {% if links %}
-        <div class="sidebar-section">
-          <h3 style="display:flex;justify-content:space-between">Quick Links{% if is_logged_in %}<span style="font-size:12px;cursor:pointer;color:var(--accent);font-weight:400">+ Add</span>{% endif %}</h3>
-          {% for link in links %}
-            <div class="link-item" style="display:flex;justify-content:space-between;align-items:center">
-              <a href="{{ link.url }}" target="_blank" style="flex:1">{{ link.title }} →</a>
-              {% if is_logged_in %}<a href="javascript:;" onclick="if(confirm('Delete link?')) window.location='{% url 'personal:delete_link' link.id %}'" style="font-size:12px;text-decoration:none;color:#dc2626">×</a>{% endif %}
-            </div>
-          {% endfor %}
-        </div>
+        </section>
       {% endif %}
 
-      <!-- Notes / Todo (Private) -->
-      {% if is_logged_in and notes %}
-        <div class="sidebar-section">
-          <h3>My Notes</h3>
-          {% regroup notes by folder as notes_by_folder %}
-          {% for folder_group in notes_by_folder %}
-            <div style="margin-bottom:12px">
-              <div style="font-weight:600;font-size:12px;color:var(--accent);text-transform:uppercase;margin-bottom:6px">{{ folder_group.grouper|title }}</div>
-              {% for n in folder_group.list %}
-                <div class="note-item">
-                  <div style="display:flex;justify-content:space-between;gap:8px">
-                    <div style="flex:1">
-                      <div class="note-title">{{ n.title }}</div>
-                      <div class="note-content">{{ n.content|truncatechars:60 }}</div>
-                    </div>
-                    <a href="{% url 'personal:toggle_note' n.pk %}" style="text-decoration:none;font-size:14px">{% if n.completed %}✓{% else %}○{% endif %}</a>
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
+      {% if educations %}
+        <section class="section">
+          <h2>Education</h2>
+          {% for ed in educations %}
+            <article class="entry">
+              <div class="entry-top">
+                <strong>{{ ed.degree|default:ed.institution }}</strong>
+                <span class="when">{{ ed.year }}</span>
+              </div>
+              <div class="when">{{ ed.institution }}</div>
+              {% if ed.details %}<p>{{ ed.details|linebreaksbr }}</p>{% endif %}
+            </article>
           {% endfor %}
-        </div>
-      {% elif is_logged_in %}
-        <div class="sidebar-section">
-          <h3>My Notes</h3>
-          <div class="small">No notes yet. <a href="javascript:;" id="editOpen" style="text-decoration:none">Add one</a></div>
-        </div>
+        </section>
       {% endif %}
 
-      <!-- Contact Form -->
-      <div class="sidebar-section">
-        <h3>Get in Touch</h3>
-        <form id="contactForm" style="display:flex;flex-direction:column;gap:8px">
-          {% csrf_token %}
-          <input type="text" name="name" placeholder="Your name" required style="padding:8px;border:1px solid #ccc;border-radius:6px;font-size:13px" />
-          <input type="email" name="email" placeholder="your@email.com" required style="padding:8px;border:1px solid #ccc;border-radius:6px;font-size:13px" />
-          <input type="text" name="subject" placeholder="Subject" required style="padding:8px;border:1px solid #ccc;border-radius:6px;font-size:13px" />
-          <textarea name="message" placeholder="Your message..." rows="3" required style="padding:8px;border:1px solid #ccc;border-radius:6px;font-size:13px;resize:none"></textarea>
-          <button type="submit" class="edit-btn" style="width:100%;border:none;cursor:pointer;padding:10px;font-weight:600">Send Message</button>
+      {% if skills_by_group %}
+        <section class="section">
+          <h2>Technical Skills</h2>
+          <div class="skill-group">
+            {% for sk in skills_by_group %}
+              <div class="skill-row"><strong>{{ sk.group }}:</strong> {{ sk.items }}</div>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+      {% if achievements %}
+        <section class="section">
+          <h2>Certifications & Achievements</h2>
+          <ul class="achievement-list">
+            {% for item in achievements %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% endif %}
+    </main>
+
+    <aside class="widget-stack">
+      <section class="widget">
+        <h3>
+          <span>Quick Links</span>
+          {% if is_logged_in %}<a href="{% url 'personal:edit' %}?section=links">Edit</a>{% endif %}
+        </h3>
+        {% for link in links %}
+          <div class="link-row">
+            <a href="{{ link.url }}" target="_blank">{{ link.title }}</a>
+          </div>
+        {% empty %}
+          <div class="note">No links yet.</div>
+        {% endfor %}
+      </section>
+
+      <section class="widget">
+        <h3>
+          <span>Daily Calendar Todo</span>
+          {% if is_logged_in %}<a href="{% url 'personal:edit' %}?section=notes">Manage</a>{% endif %}
+        </h3>
+        <div class="cal-head">
+          <button id="calPrev" type="button">◀</button>
+          <strong id="calLabel" style="font-size:13px"></strong>
+          <button id="calNext" type="button">▶</button>
+        </div>
+        <div id="calendarGrid" class="cal-grid"></div>
+
+        <div class="todo-title" id="selectedDayLabel">Select a date</div>
+        <form id="todoForm" class="todo-form">
+          <input id="todoText" name="text" placeholder="Add task for selected date" maxlength="220">
+          <button type="submit">Add Todo</button>
         </form>
-        <div id="contactMessage" style="margin-top:8px;font-size:12px;display:none"></div>
-      </div>
+        <ul id="todoList" class="todo-list"></ul>
+        <div class="note" id="todoHelp">{% if not is_logged_in %}Tasks are saved in this browser. Admin login saves them to server.{% endif %}</div>
+      </section>
 
-      <!-- Calendar -->
-      <div class="sidebar-section">
-        <h3>Calendar <a href="javascript:;" id="calendarHelpBtn" style="font-size:12px;color:var(--muted);text-decoration:none;float:right">?</a></h3>
-        <div id="miniCal"></div>
-        <div class="small" style="margin-top:8px">Click any date to add a note</div>
-        <div id="calendarHelp" style="display:none;margin-top:8px;padding:8px;background:rgba(37,99,235,0.1);border-radius:6px;font-size:11px">
-          <strong>Color codes:</strong><br/>
-          <span style="display:inline-block;width:8px;height:8px;background:#3b82f6;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Blue = Today<br/>
-          <span style="display:inline-block;width:8px;height:8px;background:#8b5cf6;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Purple = Has note
+      <section class="widget">
+        <h3><span>Message Me</span></h3>
+        <form id="contactForm" style="display:grid;gap:7px">
+          {% csrf_token %}
+          <input type="text" name="name" placeholder="Your name" required>
+          <input type="email" name="email" placeholder="your@email.com" required>
+          <input type="text" name="subject" placeholder="Subject" required>
+          <textarea name="message" placeholder="Your message" rows="4" required style="resize:vertical"></textarea>
+          <button type="submit">Send Message</button>
+        </form>
+        <div id="contactMessage" class="note" style="display:none;margin-top:8px"></div>
+      </section>
+
+      <section class="widget">
+        <h3><span>Tic-Tac-Toe</span></h3>
+        <div class="note">Single player mode: You are X, bot is O.</div>
+        <button type="button" class="start-game" id="startGame" style="margin-top:7px;padding:7px 10px;border-radius:8px;border:0">New Game</button>
+        <div class="game-box" id="gameBox">
+          <div class="ttt-board" id="tttBoard"></div>
         </div>
-      </div>
+        <div class="game-meta">
+          <span id="gameStatus">Your turn</span>
+          <span id="gameScore">You: 0 | Bot: 0 | Draw: 0</span>
+        </div>
+      </section>
     </aside>
   </div>
 
   <script>
-    // Calendar help toggle
-    document.getElementById('calendarHelpBtn')?.addEventListener('click', (e)=>{
-      e.preventDefault();
-      const help = document.getElementById('calendarHelp');
-      help.style.display = help.style.display === 'none' ? 'block' : 'none';
-    });
-
     (function(){
-      const noteColors = {
-        todo: '#3b82f6',      // blue
-        ideas: '#8b5cf6',     // purple
-        reminders: '#ef4444', // red
-        other: '#6b7280'      // gray
-      };
-      
-      function buildCal(el){
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth();
-        const today = now.getDate();
-        const first = new Date(year, month, 1);
-        const last = new Date(year, month+1, 0);
-        let html = '<div style="font-weight:600;margin-bottom:10px;color:#0f172a">'+first.toLocaleString(undefined,{month:'long'})+' '+year+'</div>';
-        html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-size:11px">';
-        for(let i=0;i<first.getDay();i++){ html += '<div></div>' }
-        for(let d=1; d<=last.getDate(); d++){
-          const key = year+'-'+(month+1)+'-'+d;
-          const noteData = localStorage.getItem('cal-'+key) || '';
-          const noteColor = localStorage.getItem('cal-'+key+'-color') || '';
-          const isToday = d === today;
-          const hasNote = noteData !== '';
-          let bgStyle = 'background:rgba(15,23,42,0.06)';
-          if(isToday) bgStyle = 'background:#2563eb;color:white;font-weight:700';
-          else if(hasNote && noteColor) bgStyle = 'background:'+noteColor+';color:white;font-weight:600';
-          else if(hasNote) bgStyle = 'background:#8b5cf6;color:white;font-weight:600';
-          html += '<div style="padding:6px;border-radius:6px;'+bgStyle+';cursor:pointer;text-align:center;border:1px solid rgba(15,23,42,0.08);position:relative" data-day="'+d+'" title="'+(hasNote?noteData:'')+'" '+
-            'onmouseover="this.style.opacity=\'0.8\';this.style.transform=\'scale(1.05)\'" onmouseout="this.style.opacity=\'1\';this.style.transform=\'scale(1)\'">'+d+'</div>'
-        }
-        html += '</div>';
-        el.innerHTML = html;
-        el.querySelectorAll('[data-day]').forEach(node=>{
-          node.addEventListener('click', ()=>{
-            const d = node.getAttribute('data-day');
-            const key = year+'-'+(month+1)+'-'+d;
-            const cur = localStorage.getItem('cal-'+key) || '';
-            const color = localStorage.getItem('cal-'+key+'-color') || '';
-            const v = prompt('Note for '+key+' (current: "'+cur+'")', cur);
-            if(v===null) return;
-            if(v==='') {
-              localStorage.removeItem('cal-'+key); 
-              localStorage.removeItem('cal-'+key+'-color');
-            } else {
-              localStorage.setItem('cal-'+key, v);
-              // Auto-assign color based on keywords
-              let autoColor = '#6b7280'; // default gray
-              if(v.toLowerCase().includes('todo') || v.toLowerCase().includes('task')) autoColor = '#3b82f6';
-              else if(v.toLowerCase().includes('idea') || v.toLowerCase().includes('think')) autoColor = '#8b5cf6';
-              else if(v.toLowerCase().includes('remind') || v.toLowerCase().includes('important')) autoColor = '#ef4444';
-              localStorage.setItem('cal-'+key+'-color', autoColor);
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
             }
-            buildCal(el);
-          })
-        })
+          }
+        }
+        return cookieValue;
       }
-      const el = document.getElementById('miniCal'); if(el) buildCal(el);
-    })();
-    
-    // Contact form submission
-    const contactForm = document.getElementById('contactForm');
-    if(contactForm){
-      contactForm.addEventListener('submit', async (e)=>{
+      const csrftoken = getCookie('csrftoken');
+      const isLoggedIn = {{ is_logged_in|yesno:"true,false" }};
+
+      const contactForm = document.getElementById('contactForm');
+      contactForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(contactForm);
-        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        const resp = await fetch('{% url "personal:contact" %}', {
-          method: 'POST',
-          headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrftoken},
-          body: formData
-        });
-        const msgEl = document.getElementById('contactMessage');
-        if(resp.ok){
+        const msg = document.getElementById('contactMessage');
+        msg.style.display = 'block';
+        msg.textContent = 'Sending...';
+        try {
+          const resp = await fetch('{% url "personal:contact" %}', {
+            method: 'POST',
+            headers: {'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrftoken},
+            body: formData,
+          });
           const js = await resp.json();
-          msgEl.style.color='#059669';
-          msgEl.textContent = js.message;
-          contactForm.reset();
-          setTimeout(()=>{ msgEl.style.display='none'; }, 5000);
-        } else {
-          const e = await resp.json();
-          msgEl.style.color='#dc2626';
-          msgEl.textContent = e.error || 'Error sending message';
+          if (resp.ok && js.success) {
+            msg.style.color = '#0f766e';
+            msg.textContent = js.message;
+            contactForm.reset();
+          } else {
+            msg.style.color = '#b91c1c';
+            msg.textContent = js.error || 'Could not send your message.';
+          }
+        } catch (_) {
+          msg.style.color = '#b91c1c';
+          msg.textContent = 'Network error. Please try again.';
         }
-        msgEl.style.display='block';
       });
-    }
+
+      const calGrid = document.getElementById('calendarGrid');
+      const calLabel = document.getElementById('calLabel');
+      const todoList = document.getElementById('todoList');
+      const selectedDayLabel = document.getElementById('selectedDayLabel');
+      const todoForm = document.getElementById('todoForm');
+      const todoText = document.getElementById('todoText');
+      const calPrev = document.getElementById('calPrev');
+      const calNext = document.getElementById('calNext');
+
+      let current = new Date();
+      current = new Date(current.getFullYear(), current.getMonth(), 1);
+      let selectedDay = new Date().toISOString().slice(0, 10);
+      let items = [];
+      const LOCAL_TODO_KEY = 'calendar-todos-local-v1';
+
+      function loadLocalTodos() {
+        try {
+          const raw = localStorage.getItem(LOCAL_TODO_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (_) {
+          return [];
+        }
+      }
+
+      function saveLocalTodos(nextItems) {
+        localStorage.setItem(LOCAL_TODO_KEY, JSON.stringify(nextItems));
+      }
+
+      function monthKey(d) {
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        return d.getFullYear() + '-' + m;
+      }
+
+      function countByDay() {
+        const map = {};
+        for (const item of items) {
+          map[item.day] = (map[item.day] || 0) + 1;
+        }
+        return map;
+      }
+
+      async function fetchMonth() {
+        if (!isLoggedIn) {
+          const mkey = monthKey(current);
+          items = loadLocalTodos().filter((x) => (x.day || '').startsWith(mkey + '-'));
+          renderCalendar();
+          renderTodoList();
+          return;
+        }
+        const resp = await fetch('{% url "personal:calendar_todos" %}?month=' + monthKey(current), {
+          headers: {'X-Requested-With': 'XMLHttpRequest'},
+        });
+        if (!resp.ok) {
+          items = [];
+        } else {
+          const js = await resp.json();
+          items = js.items || [];
+        }
+        renderCalendar();
+        renderTodoList();
+      }
+
+      function renderCalendar() {
+        const y = current.getFullYear();
+        const m = current.getMonth();
+        const firstDay = new Date(y, m, 1);
+        const lastDay = new Date(y, m + 1, 0);
+        const today = new Date();
+        calLabel.textContent = firstDay.toLocaleString(undefined, {month: 'long', year: 'numeric'});
+        const counts = countByDay();
+
+        let html = '';
+        const dows = ['S','M','T','W','T','F','S'];
+        for (const d of dows) html += '<div class="dow">' + d + '</div>';
+        for (let i = 0; i < firstDay.getDay(); i++) html += '<div></div>';
+        for (let day = 1; day <= lastDay.getDate(); day++) {
+          const iso = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+          const isToday = iso === today.toISOString().slice(0, 10);
+          const isActive = iso === selectedDay;
+          html += '<button type="button" class="cal-day' + (isToday ? ' today' : '') + (isActive ? ' active' : '') + '" data-day="' + iso + '">' + day + (counts[iso] ? '<span class="dot"></span>' : '') + '</button>';
+        }
+        calGrid.innerHTML = html;
+
+        calGrid.querySelectorAll('.cal-day').forEach((node) => {
+          node.addEventListener('click', () => {
+            selectedDay = node.getAttribute('data-day');
+            renderCalendar();
+            renderTodoList();
+          });
+        });
+      }
+
+      function renderTodoList() {
+        selectedDayLabel.textContent = 'Tasks for ' + selectedDay;
+        const dayItems = items.filter((x) => x.day === selectedDay);
+        if (!dayItems.length) {
+          todoList.innerHTML = '<li class="note">No tasks for this date.</li>';
+          return;
+        }
+
+        todoList.innerHTML = dayItems.map((item) => {
+          return '<li class="todo-item' + (item.completed ? ' done' : '') + '">' +
+            '<span>' + item.text.replaceAll('<', '&lt;').replaceAll('>', '&gt;') + '</span>' +
+            '<span class="todo-actions">' +
+            '<button class="mini-btn" data-toggle="' + item.id + '">' + (item.completed ? 'Undo' : 'Done') + '</button>' +
+            '<button class="mini-btn danger" data-delete="' + item.id + '">Delete</button>' +
+            '</span>' +
+            '</li>';
+        }).join('');
+
+        todoList.querySelectorAll('[data-toggle]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-toggle');
+            if (!isLoggedIn) {
+              const all = loadLocalTodos();
+              const target = all.find((x) => String(x.id) === String(id));
+              if (target) target.completed = !target.completed;
+              saveLocalTodos(all);
+              await fetchMonth();
+              return;
+            }
+            await fetch('/api/calendar_todos/' + id + '/toggle/', {
+              method: 'POST',
+              headers: {'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest'},
+            });
+            await fetchMonth();
+          });
+        });
+
+        todoList.querySelectorAll('[data-delete]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-delete');
+            if (!isLoggedIn) {
+              const all = loadLocalTodos().filter((x) => String(x.id) !== String(id));
+              saveLocalTodos(all);
+              await fetchMonth();
+              return;
+            }
+            await fetch('/api/calendar_todos/' + id + '/delete/', {
+              method: 'POST',
+              headers: {'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest'},
+            });
+            await fetchMonth();
+          });
+        });
+      }
+
+      todoForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = todoText.value.trim();
+        if (!text) return;
+        const todoHelp = document.getElementById('todoHelp');
+        if (!isLoggedIn) {
+          const all = loadLocalTodos();
+          all.push({
+            id: 'local-' + Date.now(),
+            day: selectedDay,
+            text,
+            completed: false,
+          });
+          saveLocalTodos(all);
+          todoText.value = '';
+          if (todoHelp) {
+            todoHelp.textContent = 'Saved in this browser.';
+            todoHelp.style.color = '#0f766e';
+          }
+          await fetchMonth();
+          return;
+        }
+        const body = new FormData();
+        body.append('day', selectedDay);
+        body.append('text', text);
+        const resp = await fetch('{% url "personal:add_calendar_todo" %}', {
+          method: 'POST',
+          headers: {'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest'},
+          body,
+        });
+        if (resp.ok) {
+          todoText.value = '';
+          await fetchMonth();
+          if (todoHelp) {
+            todoHelp.textContent = 'Saved to server.';
+            todoHelp.style.color = '#0f766e';
+          }
+        } else if (todoHelp) {
+          todoHelp.textContent = 'Could not save todo. Please try again.';
+          todoHelp.style.color = '#b91c1c';
+        }
+      });
+
+      calPrev?.addEventListener('click', async () => {
+        current = new Date(current.getFullYear(), current.getMonth() - 1, 1);
+        await fetchMonth();
+      });
+      calNext?.addEventListener('click', async () => {
+        current = new Date(current.getFullYear(), current.getMonth() + 1, 1);
+        await fetchMonth();
+      });
+
+      const startGame = document.getElementById('startGame');
+      const tttBoard = document.getElementById('tttBoard');
+      const gameStatus = document.getElementById('gameStatus');
+      const gameScore = document.getElementById('gameScore');
+      let board = Array(9).fill('');
+      let locked = false;
+      let scores = { x: 0, o: 0, d: 0 };
+
+      function scoreText() {
+        return 'You: ' + scores.x + ' | Bot: ' + scores.o + ' | Draw: ' + scores.d;
+      }
+
+      function checkWin(mark) {
+        const wins = [
+          [0,1,2],[3,4,5],[6,7,8],
+          [0,3,6],[1,4,7],[2,5,8],
+          [0,4,8],[2,4,6]
+        ];
+        return wins.some((line) => line.every((i) => board[i] === mark));
+      }
+
+      function openSpots() {
+        const spots = [];
+        for (let i = 0; i < board.length; i += 1) {
+          if (!board[i]) spots.push(i);
+        }
+        return spots;
+      }
+
+      function renderBoard() {
+        tttBoard.innerHTML = board.map((cell, i) => {
+          return '<button type="button" class="ttt-cell" data-cell="' + i + '"' + (cell || locked ? ' disabled' : '') + '>' + cell + '</button>';
+        }).join('');
+        tttBoard.querySelectorAll('[data-cell]').forEach((btn) => {
+          btn.addEventListener('click', () => playerMove(Number(btn.getAttribute('data-cell'))));
+        });
+        gameScore.textContent = scoreText();
+      }
+
+      function endRound(statusText) {
+        locked = true;
+        gameStatus.textContent = statusText + ' Tap "New Game".';
+        renderBoard();
+      }
+
+      function botMove() {
+        const spots = openSpots();
+        if (!spots.length) return;
+
+        let pick = spots.find((idx) => {
+          board[idx] = 'O';
+          const win = checkWin('O');
+          board[idx] = '';
+          return win;
+        });
+        if (pick === undefined) {
+          pick = spots.find((idx) => {
+            board[idx] = 'X';
+            const block = checkWin('X');
+            board[idx] = '';
+            return block;
+          });
+        }
+        if (pick === undefined && !board[4]) pick = 4;
+        if (pick === undefined) pick = spots[Math.floor(Math.random() * spots.length)];
+
+        board[pick] = 'O';
+        if (checkWin('O')) {
+          scores.o += 1;
+          endRound('Bot wins.');
+          return;
+        }
+        if (!openSpots().length) {
+          scores.d += 1;
+          endRound('Draw.');
+          return;
+        }
+        gameStatus.textContent = 'Your turn';
+        locked = false;
+        renderBoard();
+      }
+
+      function playerMove(index) {
+        if (locked || board[index]) return;
+        board[index] = 'X';
+        if (checkWin('X')) {
+          scores.x += 1;
+          endRound('You win.');
+          return;
+        }
+        if (!openSpots().length) {
+          scores.d += 1;
+          endRound('Draw.');
+          return;
+        }
+        locked = true;
+        gameStatus.textContent = 'Bot thinking...';
+        renderBoard();
+        setTimeout(botMove, 220);
+      }
+
+      function newGame() {
+        board = Array(9).fill('');
+        locked = false;
+        gameStatus.textContent = 'Your turn';
+        renderBoard();
+      }
+
+      startGame?.addEventListener('click', () => {
+        if (locked || board.some(Boolean)) {
+          newGame();
+          return;
+        }
+        newGame();
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'r') {
+          const active = document.activeElement;
+          if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+            return;
+          }
+          newGame();
+        }
+      });
+
+      newGame();
+      fetchMonth();
+    })();
   </script>
 {% endblock %}
