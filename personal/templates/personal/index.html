@@ -1,5 +1,5 @@
 {% extends 'personal/base.html' %}
-{% block title %}{{ profile.name }} — {{ profile.title }}{% endblock %}
+{% block title %}{{ seo_title|default:profile.name }}{% endblock %}
 {% block content %}
   <style>
     :root {
@@ -434,7 +434,7 @@
       <section class="identity">
         <div class="avatar">
           {% if profile.photo %}
-            <img src="{{ profile.photo.url }}" alt="Profile" data-field="photo_preview">
+            <img src="{{ profile.photo.url }}" alt="{{ profile.name }} profile photo" data-field="photo_preview">
           {% else %}
             <div style="width:100%;height:100%;display:grid;place-items:center;color:#6b7280;font-size:13px">Photo</div>
           {% endif %}

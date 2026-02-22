@@ -150,7 +150,6 @@ def _build_seo_context(request, profile, experiences, educations, skills_by_grou
     same_as = _dedupe_terms([profile.linkedin, profile.github])
 
     person_schema = {
-        '@context': 'https://schema.org',
         '@type': 'Person',
         '@id': f'{canonical_url}#person',
         'url': canonical_url,
@@ -187,6 +186,25 @@ def _build_seo_context(request, profile, experiences, educations, skills_by_grou
     if knows_about:
         person_schema['knowsAbout'] = knows_about[:20]
 
+    website_schema = {
+        '@type': 'WebSite',
+        '@id': f'{site_base_url}/#website',
+        'url': site_base_url,
+        'name': f"{profile.name or 'Kamal Soni'} Portfolio",
+    }
+    profile_page_schema = {
+        '@type': 'ProfilePage',
+        '@id': f'{canonical_url}#webpage',
+        'url': canonical_url,
+        'name': seo_title,
+        'isPartOf': {'@id': f'{site_base_url}/#website'},
+        'about': {'@id': f'{canonical_url}#person'},
+    }
+    schema_graph = {
+        '@context': 'https://schema.org',
+        '@graph': [website_schema, profile_page_schema, person_schema],
+    }
+
     return {
         'seo_title': seo_title,
         'seo_description': seo_description,
@@ -195,8 +213,13 @@ def _build_seo_context(request, profile, experiences, educations, skills_by_grou
         'seo_robots': 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
         'seo_author': profile.name or 'Kamal Soni',
         'seo_image_url': seo_image_url,
-        'seo_json_ld': json.dumps(person_schema, ensure_ascii=True),
+        'seo_json_ld': json.dumps(schema_graph, ensure_ascii=True),
     }
+
+
+def _with_noindex(response):
+    response['X-Robots-Tag'] = 'noindex, nofollow, noarchive'
+    return response
 
 
 def index(request):
@@ -274,8 +297,8 @@ def login_view(request):
         else:
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'error': 'Invalid credentials'}, status=400)
-            return render(request, 'personal/login.html', {'error': 'Invalid credentials'})
-    return render(request, 'personal/login.html')
+            return _with_noindex(render(request, 'personal/login.html', {'error': 'Invalid credentials'}))
+    return _with_noindex(render(request, 'personal/login.html'))
 
 
 def sitemap_xml(request):
@@ -305,6 +328,7 @@ def robots_txt(request):
         'Disallow: /login/',
         'Disallow: /logout/',
         'Disallow: /edit/',
+        'Disallow: /contact/',
         'Disallow: /api/',
         'Disallow: /add_',
         'Disallow: /delete_',
@@ -477,7 +501,7 @@ def edit(request):
     educations = profile.educations.all()
     notes = profile.notes.order_by('-created_at')
 
-    return render(request, 'personal/edit.html', {
+    return _with_noindex(render(request, 'personal/edit.html', {
         'profile': profile,
         'pform': pform,
         'qform': qform,
@@ -492,7 +516,7 @@ def edit(request):
         'notes': notes,
         'focus_section': focus_section,
         'focus_id': focus_id,
-    })
+    }))
 
 
 @edit_required

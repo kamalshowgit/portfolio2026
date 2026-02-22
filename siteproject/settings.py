@@ -26,6 +26,7 @@ if not ALLOWED_HOSTS and not DEBUG:
     raise RuntimeError('Set ALLOWED_HOSTS when DEBUG=False')
 
 CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS', '')
+SITE_BASE_URL = os.getenv('SITE_BASE_URL', '').strip().rstrip('/')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
