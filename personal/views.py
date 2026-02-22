@@ -2,11 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Profile, QuickLink, Project, Note, ContactMessage, Experience, Education, CalendarTodo
 from .forms import ProfileForm, QuickLinkForm, ProjectForm, NoteForm, ContactForm, ExperienceForm, EducationForm
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from django.core.mail import EmailMessage
 from datetime import date
 import re
+import json
 
 MONTH_TO_NUM = {
     'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
@@ -60,6 +61,144 @@ def _parse_period_sort_key(value):
     return 0, 0
 
 
+def _dedupe_terms(values):
+    items = []
+    seen = set()
+    for value in values:
+        cleaned = re.sub(r'\s+', ' ', (value or '')).strip()
+        if not cleaned:
+            continue
+        key = cleaned.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        items.append(cleaned)
+    return items
+
+
+def _shorten(text, limit):
+    cleaned = re.sub(r'\s+', ' ', (text or '')).strip()
+    if len(cleaned) <= limit:
+        return cleaned
+    shortened = cleaned[: limit - 3].rstrip()
+    if ' ' in shortened:
+        shortened = shortened.rsplit(' ', 1)[0]
+    return f"{shortened}..."
+
+
+def _site_base_url(request):
+    configured = (getattr(settings, 'SITE_BASE_URL', '') or '').strip()
+    if configured:
+        return configured.rstrip('/')
+    return f"{request.scheme}://{request.get_host()}"
+
+
+def _build_seo_context(request, profile, experiences, educations, skills_by_group):
+    site_base_url = _site_base_url(request)
+    canonical_url = f"{site_base_url}{reverse('personal:index')}"
+
+    employers = _dedupe_terms([ex.employer for ex in experiences])
+    institutions = _dedupe_terms([ed.institution for ed in educations])
+
+    skill_terms = []
+    for group in skills_by_group:
+        raw_items = group.get('items', '')
+        skill_terms.extend([item.strip() for item in raw_items.split(',') if item.strip()])
+    skill_terms = _dedupe_terms(skill_terms)
+
+    description_fallback = (
+        f"{profile.name} portfolio featuring data analytics, machine learning, "
+        "risk modeling, and professional experience including HSBC."
+    )
+    bio = _shorten(profile.bio, 240)
+    if bio:
+        prefix = f"{profile.name}"
+        if profile.title:
+            prefix += f", {profile.title}"
+        seo_description = _shorten(f"{prefix}. {bio}", 165)
+    else:
+        seo_description = description_fallback
+
+    seo_title = f"{profile.name} | Analytics, Machine Learning, HSBC Experience"
+    if profile.title:
+        seo_title = f"{profile.name} | {profile.title} | Analytics Portfolio"
+
+    keyword_candidates = [
+        profile.name,
+        'Kamal Soni',
+        profile.title,
+        'Data Analytics',
+        'Analytics',
+        'Business Analytics',
+        'Machine Learning',
+        'Risk Analytics',
+        'Model Risk Validation',
+        'Python',
+        'SQL',
+        'PySpark',
+        'Power BI',
+        'HSBC',
+        'Portfolio',
+    ]
+    keyword_candidates.extend(skill_terms)
+    keyword_candidates.extend(employers)
+    keyword_candidates.extend(institutions)
+    keyword_candidates.extend(['Kaggle', 'Data Scientist', 'Credit Risk', 'Financial Analytics'])
+    seo_keywords = ', '.join(_dedupe_terms(keyword_candidates)[:30])
+
+    seo_image_url = request.build_absolute_uri(profile.photo.url) if profile.photo else ''
+    same_as = _dedupe_terms([profile.linkedin, profile.github])
+
+    person_schema = {
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        '@id': f'{canonical_url}#person',
+        'url': canonical_url,
+        'name': profile.name or 'Kamal Soni',
+        'description': seo_description,
+        'mainEntityOfPage': canonical_url,
+    }
+    if profile.title:
+        person_schema['jobTitle'] = profile.title
+    if profile.email:
+        person_schema['email'] = f'mailto:{profile.email}'
+    if profile.phone:
+        person_schema['telephone'] = profile.phone
+    if profile.location:
+        person_schema['homeLocation'] = {'@type': 'Place', 'name': profile.location}
+    if seo_image_url:
+        person_schema['image'] = seo_image_url
+    if same_as:
+        person_schema['sameAs'] = same_as
+    if employers:
+        person_schema['worksFor'] = [{'@type': 'Organization', 'name': name} for name in employers[:6]]
+    if institutions:
+        person_schema['alumniOf'] = [{'@type': 'EducationalOrganization', 'name': name} for name in institutions[:6]]
+    knows_about = _dedupe_terms([
+        'Data Analytics',
+        'Machine Learning',
+        'Model Risk',
+        'Credit Risk',
+        'A/B Testing',
+        'Python',
+        'SQL',
+        'PySpark',
+    ] + skill_terms)
+    if knows_about:
+        person_schema['knowsAbout'] = knows_about[:20]
+
+    return {
+        'seo_title': seo_title,
+        'seo_description': seo_description,
+        'seo_keywords': seo_keywords,
+        'seo_canonical_url': canonical_url,
+        'seo_robots': 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+        'seo_author': profile.name or 'Kamal Soni',
+        'seo_image_url': seo_image_url,
+        'seo_json_ld': json.dumps(person_schema, ensure_ascii=True),
+    }
+
+
 def index(request):
     profile = _get_profile()
     links = profile.links.all()
@@ -106,7 +245,7 @@ def index(request):
         'Certifications: CS50 (Harvard), Python for Data Science (IIT Madras), DSA (IIT Madras), SEBI/NISM',
     ]
 
-    return render(request, 'personal/index.html', {
+    context = {
         'profile': profile,
         'links': links,
         'projects': projects,
@@ -117,7 +256,9 @@ def index(request):
         'skills_by_group': skills_by_group,
         'achievements': achievements,
         'is_logged_in': request.session.get('personal_logged_in', False),
-    })
+    }
+    context.update(_build_seo_context(request, profile, experiences, educations, skills_by_group))
+    return render(request, 'personal/index.html', context)
 
 
 def login_view(request):
@@ -135,6 +276,42 @@ def login_view(request):
                 return JsonResponse({'success': False, 'error': 'Invalid credentials'}, status=400)
             return render(request, 'personal/login.html', {'error': 'Invalid credentials'})
     return render(request, 'personal/login.html')
+
+
+def sitemap_xml(request):
+    site_base_url = _site_base_url(request)
+    home_url = f"{site_base_url}{reverse('personal:index')}"
+    today = date.today().isoformat()
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        '  <url>\n'
+        f'    <loc>{home_url}</loc>\n'
+        f'    <lastmod>{today}</lastmod>\n'
+        '    <changefreq>weekly</changefreq>\n'
+        '    <priority>1.0</priority>\n'
+        '  </url>\n'
+        '</urlset>\n'
+    )
+    return HttpResponse(xml, content_type='application/xml')
+
+
+def robots_txt(request):
+    site_base_url = _site_base_url(request)
+    lines = [
+        'User-agent: *',
+        'Allow: /',
+        'Disallow: /admin/',
+        'Disallow: /login/',
+        'Disallow: /logout/',
+        'Disallow: /edit/',
+        'Disallow: /api/',
+        'Disallow: /add_',
+        'Disallow: /delete_',
+        'Disallow: /toggle_',
+        f'Sitemap: {site_base_url}/sitemap.xml',
+    ]
+    return HttpResponse('\n'.join(lines) + '\n', content_type='text/plain')
 
 
 def update_profile(request):
